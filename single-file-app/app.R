@@ -2,6 +2,7 @@
 library(shiny)
 library(palmerpenguins)
 library(tidyverse)
+library(DT)
 
 
 # ui ----
@@ -19,8 +20,17 @@ ui <- fluidPage(
              min = 2700, max = 6300, value = c(3000, 4000)),
 
  # body mass plotOutput ----
- plotOutput(outputId = "body_mass_scatter")
+ plotOutput(outputId = "body_mass_scatter"),
 
+# add checkboxGroupInput ----
+
+checkboxGroupInput(inputId = "year_input", label = "Select year(s):",
+                   choices = c("2007", "2008", "2009"),
+                   selected = c("2007", "2008")), # unique(penguins$year)
+
+#DT output ----
+
+DT::dataTableOutput(outputId = "penguin_data")
 
 ) # END fluidPage
 
@@ -54,6 +64,22 @@ server <- function(input, output){
 
 
   }) # END render scatter plot
+
+  # filtered years ----
+  filtered_years <- reactive({
+
+   penguins %>%
+    filter(year %in% c(input$year_input))
+
+    })
+
+  #render DT ----
+  output$penguin_data <- DT::renderDataTable({
+
+
+    DT::datatable(filtered_years())
+  })
+
 
 
 
